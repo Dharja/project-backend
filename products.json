@@ -1,0 +1,45 @@
+    [
+        {
+        "id": "1",
+        "title": "Camiseta",
+        "description": "Camiseta de algodón",
+        "code": "C001",
+        "price": 20,
+        "status": true,
+        "stock": 10,
+        "category": "Ropa",
+        "thumbnails": [
+            "ruta-imagen1.jpg",
+            "ruta-imagen2.jpg"
+        ]
+        },
+        {
+        "id": "2",
+        "title": "Zapatillas",
+        "description": "Zapatillas deportivas",
+        "code": "Z001",
+        "price": 50,
+        "status": true,
+        "stock": 5,
+        "category": "Calzado",
+        "thumbnails": [
+            "ruta-imagen3.jpg",
+            "ruta-imagen4.jpg"
+        ]
+        },
+        {
+        "id": "3",
+        "title": "Pantalón",
+        "description": "Pantalón de mezclilla",
+        "code": "P001",
+        "price": 30,
+        "status": true,
+        "stock": 8,
+        "category": "Ropa",
+        "thumbnails": [
+            "ruta-imagen5.jpg",
+            "ruta-imagen6.jpg"
+        ]
+        }
+    ]
+    
