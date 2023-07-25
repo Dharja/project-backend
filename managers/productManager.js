@@ -39,6 +39,36 @@ class ProductManager {
         throw error;
         }
     }
-}
+
+    async deleteProduct(id) {
+        try {
+            const data = await fs.readFile(this.filePath, 'utf-8');
+            let products = JSON.parse(data);
+            products = products.filter((product) => product.id !== id);
+            await fs.writeFile(this.filePath, JSON.stringify(products, null, 2), 'utf-8');
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            throw error;
+        }
+    }
+
+    async updateProduct(id, updatedProduct) {
+        try {
+            const data = await fs.readFile(this.filePath, 'utf-8');
+            let products = JSON.parse(data);
+            const index = products.findIndex((product) => product.id === id);
+            if (index !== -1) {
+                products[index] = { ...products[index], ...updatedProduct };
+                await fs.writeFile(this.filePath, JSON.stringify(products, null, 2), 'utf-8');
+            } else {
+                throw new Error('Producto no encontrado');
+            }
+        } catch (error) {
+            console.error('Error updating product:', error);
+            throw error;
+        }
+    }
+}    
+
 
 module.exports = ProductManager;

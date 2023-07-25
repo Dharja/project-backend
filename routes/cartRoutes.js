@@ -50,4 +50,16 @@ router.post('/:cid/product/:pid', async (req, res) => {
     }
 });
 
+// Ruta POST /api/carts
+router.post('/', async (req, res) => {
+    try {
+        const newCart = await cartManager.addCart(); // Método del manager para agregar un nuevo carrito
+
+        res.status(201).json(newCart);
+    } catch (error) {
+        console.error('Error al agregar el carrito', error);
+        res.status(500).json({ error: 'Error al agregar el carrito' });
+    }
+});
+
 module.exports = router;

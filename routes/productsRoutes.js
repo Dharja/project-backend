@@ -55,10 +55,35 @@ router.get('/:pid', async (req, res) => {
             res.status(500).json({ error: 'Error al agregar el producto' });
         }
     });
-    
-    // Función para generar un nuevo ID para el producto
-    function generateProductId() {
-        return Date.now().toString();
+
+// Función para generar un nuevo ID para el producto
+function generateProductId() {
+    return Date.now().toString();
+}
+
+// Ruta DELETE /api/products/:pid
+router.delete('/:pid', async (req, res) => {
+    try {
+        const productId = req.params.pid;
+        await productManager.deleteProduct(productId); // Método del manager para eliminar el producto
+        res.status(200).json({ message: 'Producto eliminado exitosamente' });
+    } catch (error) {
+        console.error('Error al eliminar el producto', error);
+        res.status(500).json({ error: 'Error al eliminar el producto' });
     }
-    
+});
+
+// Ruta PUT /api/products/:pid
+router.put('/:pid', async (req, res) => {
+    try {
+        const productId = req.params.pid;
+        const updatedProduct = req.body;
+        await productManager.updateProduct(productId, updatedProduct); // Método del manager para actualizar el producto
+        res.status(200).json({ message: 'Producto actualizado exitosamente' });
+    } catch (error) {
+        console.error('Error al actualizar el producto', error);
+        res.status(500).json({ error: 'Error al actualizar el producto' });
+    }
+});
+
 module.exports = router;

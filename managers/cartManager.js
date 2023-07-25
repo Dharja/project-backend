@@ -1,6 +1,6 @@
-    const fs = require('fs').promises;
+const fs = require('fs').promises;
 
-    class CartManager {
+class CartManager {
     constructor(filePath) {
         this.filePath = filePath;
     }
@@ -47,6 +47,23 @@
         throw error;
         }
     }
+
+    async addCart() {
+        try {
+            const data = await fs.readFile(this.filePath, 'utf-8');
+            let carts = JSON.parse(data);
+            const newCart = {
+                id: generateCartId(),
+                products: []
+            };
+            carts.push(newCart);
+            await fs.writeFile(this.filePath, JSON.stringify(carts, null, 2), 'utf-8');
+            return newCart;
+        } catch (error) {
+            console.error('Error adding cart:', error);
+            throw error;
+        }
     }
+}
 
 module.exports = CartManager;
