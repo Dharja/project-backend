@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs').promises;
-const CartManager = require('./managers/cartManager');
-
-const cartManager = new CartManager('./data/cart.json');
+const path = require ("path"); 
+const filePath = pat.join(__dirname ,"..", "..", "data", "cart.json");
+const ProductManager = require('../../managers/cartManager');
 
 // Ruta GET /api/carts/:cid
 router.get('/:cid', async (req, res) => {
@@ -25,9 +24,9 @@ router.get('/:cid', async (req, res) => {
 // Ruta POST /api/carts/:cid/product/:pid
 router.post('/:cid/product/:pid', async (req, res) => {
     try {
-        const cartId = req.params.cid;
-        const productId = req.params.pid;
-        const cart = await cartManager.getCartById(cartId); // método del manager para obtener el carrito
+        const cartId = parseInt(req.params.cid);
+        const productId = parseInt(req.params.pid);
+        const cart = await cartManager.getCartById(cartId); 
 
         if (!cart) {
             res.status(404).json({ error: 'Carrito no encontrado' });
@@ -40,8 +39,6 @@ router.post('/:cid/product/:pid', async (req, res) => {
                 cart.products.push({ id: productId, quantity: 1 });
             }
 
-            await cartManager.saveCart(cart); // método del manager para guardar el carrito actualizado
-
             res.status(200).json(cart.products);
         }
     } catch (error) {
@@ -49,6 +46,7 @@ router.post('/:cid/product/:pid', async (req, res) => {
         res.status(500).json({ error: 'Error al agregar el producto al carrito' });
     }
 });
+
 
 // Ruta POST /api/carts
 router.post('/', async (req, res) => {

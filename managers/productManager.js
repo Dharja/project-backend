@@ -46,6 +46,7 @@ class ProductManager {
             let products = JSON.parse(data);
             products = products.filter((product) => product.id !== id);
             await fs.writeFile(this.filePath, JSON.stringify(products, null, 2), 'utf-8');
+            return true; // Indicar que se eliminó correctamente
         } catch (error) {
             console.error('Error deleting product:', error);
             throw error;

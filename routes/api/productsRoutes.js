@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs').promises;
-const ProductManager = require('../managers/productManager');
+const path = require ("path"); 
+const filePath = pat.join(__dirname ,"..", "..", "data", "products.json");
+const ProductManager = require('../../managers/productManager');
 
-const productManager = new ProductManager('./data/products.json'); // instancia del manager de productos
 
 // Ruta GET /api/products
 router.get('/', async (req, res) => {
@@ -56,17 +56,21 @@ router.get('/:pid', async (req, res) => {
         }
     });
 
-// Función para generar un nuevo ID para el producto
+/* // Función para generar un nuevo ID para el producto
 function generateProductId() {
     return Date.now().toString();
-}
+} */
 
 // Ruta DELETE /api/products/:pid
 router.delete('/:pid', async (req, res) => {
     try {
         const productId = req.params.pid;
-        await productManager.deleteProduct(productId); // Método del manager para eliminar el producto
-        res.status(200).json({ message: 'Producto eliminado exitosamente' });
+        const product = await productManager.deleteProduct(productId); // Método del manager para eliminar el producto
+        if (!product){
+            return res.status(404).json ({status: 404, message: 'producto no encontrado'})
+        } else {
+            return res.status(200).json({ message: 'Producto eliminado exitosamente' });
+        } 
     } catch (error) {
         console.error('Error al eliminar el producto', error);
         res.status(500).json({ error: 'Error al eliminar el producto' });
