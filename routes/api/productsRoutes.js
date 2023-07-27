@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const path = require ("path"); 
-const filePath = pat.join(__dirname ,"..", "..", "data", "products.json");
+const filePath = path.join(__dirname ,"..", "..", "data", "products.json");
 const ProductManager = require('../../managers/productManager');
 
 

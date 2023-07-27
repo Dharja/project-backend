@@ -28,17 +28,21 @@ class ProductManager {
         }
     }
 
-    async addProduct(product) {
-        try {
-        const data = await fs.readFile(this.filePath, 'utf-8');
+    async addProduct(newProduct) {
+        const data = await fs.readFile(this.filepath, 'utf-8');
         const products = JSON.parse(data);
-        products.push(product);
-        await fs.writeFile(this.filePath, JSON.stringify(products, null, 2), 'utf-8');
-        } catch (error) {
-        console.error('Error adding product:', error);
-        throw error;
-        }
+    
+        const newId = products[products.length - 1]?.id + 1 || 1;
+    
+        products.push({
+            status: true,
+            ...newProduct,
+            id: newId
+        });
+    
+        await fs.writeFile(this.filepath, JSON.stringify(products, null, 2));
     }
+    
 
     async deleteProduct(id) {
         try {
