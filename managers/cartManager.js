@@ -1,4 +1,6 @@
 const fs = require('fs').promises;
+const path = require('path');
+const productManager = require('../managers/productManager');
 
 class CartManager {
     constructor(filePath) {
@@ -32,6 +34,7 @@ class CartManager {
         }
     }
 
+    //modificar la logica
     async addProductToCart(cartId, productId) {
         try {
             const data = await fs.readFile(this.filePath, 'utf-8');

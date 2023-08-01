@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const path = require ("path"); 
 const filePath = pat.join(__dirname ,"..", "..", "data", "cart.json");
-const ProductManager = require('../../managers/cartManager');
+const CartManager = require('../../managers/cartManager');
+
+const cartManager = new cartManager(filePath);
 
 // Ruta GET /api/carts/:cid
 router.get('/:cid', async (req, res) => {

@@ -3,7 +3,9 @@ const router = express.Router();
 const path = require ("path"); 
 const filePath = path.join(__dirname ,"..", "..", "data", "products.json");
 const ProductManager = require('../../managers/productManager');
+const { error } = require('console');
 
+const productManager = new ProductManager(filePath);
 
 // Ruta GET /api/products
 router.get('/', async (req, res) => {
@@ -12,7 +14,7 @@ router.get('/', async (req, res) => {
         const products = await productManager.getProducts(limit); // método del manager para obtener los productos
 
         res.json(products);
-    } catch (error) {
+    } catch (error){
         console.error('Error al obtener los productos', error);
         res.status(500).json({ error: 'Error al obtener los productos' });
     }
@@ -38,22 +40,34 @@ router.get('/:pid', async (req, res) => {
 // Ruta POST /api/products
     router.post('/', async (req, res) => {
         try {
-            const { title, description, code, price } = req.body;
+            const { body } = req;
+            const product = await productManager.addProduct(body);
+
+            if (product) {
+                return res.status(200).json({status: 200, message: 'product added succsesfully', product});
+            }else{
+                return res.status(400).json({status: 404, message: 'failed to add the product'});
+            }
+        }catch (error){
+            res.status(500).json ({status: 500, message: 'error procesing the request'});
+        }
+
+/*          const {title, description, code, price, stock, id}  
             const newProduct = {
                 id: generateProductId(),
                 title,
                 description,
                 code,
                 price
-            };
-    
-            await productManager.addProduct(newProduct); // método del manager para agregar un nuevo producto
+            }; 
+     */
+/*             await productManager.addProduct(newProduct); // método del manager para agregar un nuevo producto
     
             res.status(201).json(newProduct);
-        } catch (error) {
+        catch (error) {
             console.error('Error al agregar el producto', error);
             res.status(500).json({ error: 'Error al agregar el producto' });
-        }
+        }*/
     });
 
 /* // Función para generar un nuevo ID para el producto

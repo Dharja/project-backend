@@ -29,18 +29,30 @@ class ProductManager {
     }
 
     async addProduct(newProduct) {
-        const data = await fs.readFile(this.filepath, 'utf-8');
+        try{//agrego try y catch para poder manejar errores, despues cuando puedas implementalo en todos los metodos.
+            //tambien deberias agregar una validacion
+        
+        const data = await fs.readFile(this.filePath, 'utf-8');
         const products = JSON.parse(data);
     
-        const newId = products[products.length - 1]?.id + 1 || 1;
-    
-        products.push({
+        const newId = parseInt(products[products.length - 1]?.id) + 1 || 1;
+        newProduct.id = newId.toString();
+        const product = {
             status: true,
             ...newProduct,
-            id: newId
-        });
+        };
     
-        await fs.writeFile(this.filepath, JSON.stringify(products, null, 2));
+        products.push(product)
+
+        await fs.writeFile(this.filePath, JSON.stringify(products, null, 2));
+        return newProduct;
+
+        }
+
+        catch(err){
+            console.log ('ERROR -->', err);
+            return null;
+        }
     }
     
 
