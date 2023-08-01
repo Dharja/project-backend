@@ -1,6 +1,6 @@
 const {Router} = require('express');
-const productRouter = require('./routes/api/productsRoutes');
-const cartsRouter = require('./routes/api/cartRoutes');
+const productRouter = require('./api/productsRoutes');
+const cartsRouter = require('./api/cartRoutes');
 
 const router = Router();
 

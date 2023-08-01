@@ -34,31 +34,35 @@ class CartManager {
         }
     }
 
-    //modificar la logica
     async addProductToCart(cartId, productId) {
         try {
             const data = await fs.readFile(this.filePath, 'utf-8');
             const carts = JSON.parse(data);
-            const cart = carts.find((c) => c.id === cartId);
-            if (cart) {
-                const existingProduct = cart.products.find((p) => p.id === productId);
-                if (existingProduct) {
-                    existingProduct.quantity++;
-                } else {
-                    cart.products.push({ id: productId, quantity: 1 });
-                }
-                await fs.writeFile(this.filePath, JSON.stringify(carts, null, 2), 'utf-8');
-            } else {
+            let cart = carts.find((c) => c.id === cartId);
+    
+            if (!cart) {
                 // Si el carrito no existe, crear uno nuevo y agregar el producto
-                const newCart = { id: cartId, products: [{ id: productId, quantity: 1 }] };
-                carts.push(newCart);
-                await fs.writeFile(this.filePath, JSON.stringify(carts, null, 2), 'utf-8');
+                cart = { id: cartId, products: [] };
+                carts.push(cart);
             }
+    
+            const existingProduct = cart.products.find((p) => p.id === productId);
+    
+            if (existingProduct) {
+                // Si el producto ya existe en el carrito, incrementar su cantidad
+                existingProduct.quantity++;
+            } else {
+                // Si el producto no existe en el carrito, agregarlo con cantidad 1
+                cart.products.push({ id: productId, quantity: 1 });
+            }
+    
+            await fs.writeFile(this.filePath, JSON.stringify(carts, null, 2), 'utf-8');
         } catch (error) {
             console.error('Error adding product to cart:', error);
             throw error;
         }
     }
+    
 
     async addCart() {
         try {
