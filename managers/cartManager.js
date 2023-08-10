@@ -69,11 +69,11 @@ class CartManager {
             const data = await fs.readFile(this.filePath, 'utf-8');
             let carts = JSON.parse(data);
             let id = 1
-            if (carts.lenght > 0){
-                id = carts [carts.lenght - 1].id + 1;
+            if (carts.length > 0){
+                id = parseInt(carts [carts.length - 1].id) + 1;
             }
             const newCart = {
-                id: id,
+                id: id.toString(),
                 products: []
             };
             carts.push(newCart);
