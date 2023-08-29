@@ -3,6 +3,7 @@ const router = express.Router();
 const path = require ("path"); 
 const filePath = path.join(__dirname ,"..", "..", "data", "cart.json");
 const CartManager = require('../../managers/cartManager');
+const { render } = require('express-handlebars');
 
 const cartManager = new CartManager(filePath);
 
@@ -15,7 +16,7 @@ router.get('/:cid', async (req, res) => {
         if (!cart) {
             res.status(404).json({ error: 'Carrito no encontrado' });
         } else {
-            res.json(cart);
+            res.render('cart', { cart });
         }
     } catch (error) {
         console.error('Error al obtener los productos del carrito', error);

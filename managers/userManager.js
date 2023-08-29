@@ -1,7 +1,7 @@
 const fs = require('fs/promises');
 const path = require('path');
 
-class ProductManager {
+class UserManager {
 
     #users = []
 
@@ -20,17 +20,17 @@ class ProductManager {
         await fs.writeFile(this.filepath, data);
     }
 
-    async getAll() {
+    async getAllUsers() {
         await this.#readFile();
         return this.#users;
     }
 
-    async getById(id) {
+    async getUserById(id) {
         await this.#readFile();
         return this.#users.find(p => p.id == id);
     }
 
-    async create(user) {
+    async createUser(user) {
         await this.#readFile();
         const id = (this.#users[this.#users.length - 1]?.id || 0) + 1;
         const newUser = {
@@ -43,7 +43,7 @@ class ProductManager {
         return newUser;
     }
 
-    async save(id, user) {
+    async saveUser(id, user) {
         await this.#readFile();
         const existing = await this.getById(id);
         if (!existing) {
@@ -64,7 +64,7 @@ class ProductManager {
         await this.#writeFile();
     }
 
-    async delete(id) {
+    async deleteUser(id) {
         await this.#readFile();
 
         /// operadores
@@ -73,4 +73,4 @@ class ProductManager {
     }
 }
 
-module.exports = ProductManager;
+module.exports = UserManager;

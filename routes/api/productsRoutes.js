@@ -4,21 +4,85 @@ const path = require ("path");
 const filePath = path.join(__dirname ,"..", "..", "data", "products.json");
 const ProductManager = require('../../managers/productManager');
 const { error } = require('console');
+const { render } = require('express-handlebars');
 
 const productManager = new ProductManager(filePath);
 
-// Ruta GET /api/products
+
 router.get('/', async (req, res) => {
     try {
-        const limit = req.query.limit;
-        const products = await productManager.getProducts(limit); // método del manager para obtener los productos
+        const { search, max, min, limit, sort } = req.query;
 
-        res.json(products);
-    } catch (error){
+        let products = await productManager.getProducts();
+
+        // Filtros
+        if (search) {
+            products = products.filter(product =>
+                product.keywords.includes(search.toLowerCase()) ||
+                product.title.toLowerCase().includes(search.toLowerCase()) ||
+                product.description.toLowerCase().includes(search.toLowerCase())
+            );
+        }
+
+        if (min) {
+            products = products.filter(product => product.price >= parseFloat(min));
+        }
+
+        if (max) {
+            products = products.filter(product => product.price <= parseFloat(max));
+        }
+
+        // Ordenamientos
+        if (sort === 'asc') {
+            products.sort((a, b) => a.price - b.price);
+        } else if (sort === 'desc') {
+            products.sort((a, b) => b.price - a.price);
+        }
+
+        // Paginación
+        const pageNumber = parseInt(req.query.page) || 1;
+        const itemsPerPage = parseInt(limit) || 10;
+        const startIndex = (pageNumber - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const totalPages = Math.ceil(products.length / itemsPerPage);
+
+        const paginatedProducts = products.slice(startIndex, endIndex);
+
+        res.json({
+            status: 'success',
+            payload: paginatedProducts,
+            totalPages,
+            prevPage: pageNumber > 1 ? pageNumber - 1 : null,
+            nextPage: pageNumber < totalPages ? pageNumber + 1 : null,
+            page: pageNumber,
+            hasPrevPage: pageNumber > 1,
+            hasNextPage: pageNumber < totalPages,
+            prevLink: pageNumber > 1 ? `/api/products?page=${pageNumber - 1}` : null,
+            nextLink: pageNumber < totalPages ? `/api/products?page=${pageNumber + 1}` : null
+        });
+    } catch (error) {
         console.error('Error al obtener los productos', error);
         res.status(500).json({ error: 'Error al obtener los productos' });
     }
 });
+
+
+// Ruta GET /api/products
+router.get('/:pid', async (req, res) => {
+    try {
+        const productId = req.params.pid;
+        const product = await productManager.getProductById(productId); // método del manager para obtener un producto por su ID
+
+        if (!product) {
+            res.status(404).json({ error: 'Producto no encontrado' });
+        } else {
+            res.render('product', { product }); // Renderizar la vista "product" y pasar los datos del producto
+        }
+    } catch (error) {
+        console.error('Error al obtener el producto', error);
+        res.status(500).json({ error: 'Error al obtener el producto' });
+    }
+}); 
 
 // Ruta GET /api/products/:pid
 router.get('/:pid', async (req, res) => {
