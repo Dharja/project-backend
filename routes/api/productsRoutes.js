@@ -5,6 +5,7 @@ const filePath = path.join(__dirname ,"..", "..", "data", "products.json");
 const ProductManager = require('../../managers/productManager');
 const { error } = require('console');
 const { render } = require('express-handlebars');
+const { gunzipSync } = require('zlib');
 
 const productManager = new ProductManager(filePath);
 
@@ -64,6 +65,19 @@ router.get('/', async (req, res) => {
         console.error('Error al obtener los productos', error);
         res.status(500).json({ error: 'Error al obtener los productos' });
     }
+});
+
+
+// Ruta GET /productos
+router.get('/productos', (req, res) => {
+    // Obtener el usuario de la sesión
+    const user = req.session.user;
+
+    // Obtener el rol del usuario (puedes implementar esto según tus necesidades)
+    const role = user === 'adminCoder@coder.com' ? 'admin' : 'usuario';
+
+    // Renderizar la vista de productos y pasar los datos del usuario y el rol
+    res.render('productos', { user, role });
 });
 
 

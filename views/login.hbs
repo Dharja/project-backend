@@ -1,0 +1,29 @@
+<div class="uk-padding-large uk-child-width-1-1" uk-grid>
+    <h3>Regístrate</h3>
+    <form action="/signup" method="post">
+        <div class="uk-margin">
+        <label for="username">Nombre de usuario:</label>
+        <input name="username" id="username" class="uk-input" type="text" required>
+        </div>
+
+        <div class="uk-margin">
+        <label for="email">Correo electrónico:</label>
+        <input name="email" id="email" class="uk-input" type="email" required>
+        </div>
+
+        <div class="uk-margin">
+        <label for="password">Contraseña:</label>
+        <input name="password" id="password" class="uk-input" type="password" required>
+        </div>
+
+        {{#if error}}
+        <div class="uk-margin">
+            <div class="uk-inline">
+            <span class="uk-form-danger">{{error}}</span>
+            </div>
+        </div>
+        {{/if}}
+        
+        <button class="uk-button uk-button-default">Registrarse</button>
+    </form>
+</div>
