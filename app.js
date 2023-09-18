@@ -2,54 +2,118 @@ const express = require('express');
 const http = require('http');
 const handlebars = require('express-handlebars');
 const mongoose = require('mongoose');
-const { api, home } = require('./routes');
+const passport = require('passport');
+const GitHubStrategy = require('passport-github').Strategy;
+const session = require('express-session');
 const path = require('path');
+const { findUserById, saveUserToDatabase } = require('./userFunctions');
 
-const SocketManager = require('./websocket');
-/*  const { usuarioAut } = require('./middlewares'); */
-
-
-// Conexión a la base de datos
-(async () => {
-    try{
-        await mongoose.connect('mongodb://localhost:27017');
-
-        const app = express ();
-        const Server = http.createServer(app);
-        const { Server } = require('socket.io');
-        const io = new server(Server);
-
-        app.engine('handlebars', handlebars.engine());
-        app.set('views', path.join(__dirname, '/views')); // el setting 'views'
-        app.set('view engine', 'handlebars'); 
-
-        // Middleware para parsear el cuerpo de las solicitudes como JSON
-        app.use(express.json());
-
-    const db = mongoose.connection;
-
-    db.on('error', console.error.bind(console, 'Error de conexión a MongoDB:'));
-    db.once('open', () => {
-        console.log('Conexión exitosa a MongoDB');
-    });
-
-    app.use(express.json());
+const PORT = process.env.PORT || 3000;
 
 
-    // Configuración de WebSocket
-    const server = http.createServer(app);
-    io.on('connection', socketManager);
+const app = express();
 
-    app.use ('/api', api);
 
-    // Iniciar el servidor
-    app.listen(PORT, () => {
-        console.log(`Servidor escuchando en el puerto ${PORT}`);
-    });
+app.engine('handlebars', handlebars());
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'handlebars');
 
-        console.log('se ha conectado a la base de datos');
-    }catch(e) {
-        console.log('no se ha podido conectar a la base de datos');
-        console.log(e);
-    };
+
+app.use(express.json());
+
+
+app.use(
+    session({
+        secret: 'secreto',
+        resave: true,
+        saveUninitialized: true,
+    })
+);
+
+// Inicilizar Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+
+passport.use(
+    new GitHubStrategy(
+        {
+        clientID: 'tu_client_id',
+        clientSecret: 'tu_client_secret', 
+        callbackURL: 'http://localhost:3000/auth/github/callback',
+        },
+        (accessToken, refreshToken, profile, done) => {
+        const existingUser = findUserById(profile.id);
+
+        if (existingUser) {
+
+            return done(null, existingUser);
+        } else {
+
+            const newUser = {
+            id: profile.id,
+            displayName: profile.displayName,
+            };
+
+        saveUserToDatabase(newUser);
+        return done(null, newUser);
+        }
+    }
+    )
+);
+
+
+passport.serializeUser((user, done) => {
+    done(null, user);
 });
+
+passport.deserializeUser((user, done) => {
+    done(null, user);
+});
+
+
+app.get('/login', (req, res) => {
+    res.render('login');
+});
+
+app.get('/auth/github', passport.authenticate('github'));
+
+app.get(
+    '/auth/github/callback',
+    passport.authenticate('github', { failureRedirect: '/login' }),
+    (req, res) => {
+
+    res.redirect('/profile');
+    }
+);
+
+app.get('/profile', (req, res) => {
+    if (req.isAuthenticated()) {
+
+        res.render('profile', { user: req.user });
+    } else {
+        res.redirect('/login');
+    }
+    });
+
+app.get('/logout', (req, res) => {
+    req.logout();
+    res.redirect('/login');
+});
+
+mongoose
+    .connect('mongodb://localhost:27017', { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => {
+        console.log('Connected to MongoDB');
+        http.createServer(app).listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+        });
+    })
+    .catch((err) => {
+        console.error('Error connecting to MongoDB:', err);
+    });
+
+
+    app.listen (port, () => {
+        console.log(`Server escuchando en el puerto ${port}`);
+    });

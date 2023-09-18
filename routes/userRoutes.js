@@ -1,7 +1,7 @@
-const { Router } = require('express')
-const manager = require('../../managers/user.manager')
+const { Router } = require('express');
+const manager = require('../../managers/user.manager');
 
-const router = Router()
+const router = Router();
 
 // Ruta para registrar un nuevo usuario
 router.post('/signup', async (req, res) => {

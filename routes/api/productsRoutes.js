@@ -23,22 +23,22 @@ router.get('/', async (req, res) => {
                 product.title.toLowerCase().includes(search.toLowerCase()) ||
                 product.description.toLowerCase().includes(search.toLowerCase())
             );
-        }
+        };
 
         if (min) {
             products = products.filter(product => product.price >= parseFloat(min));
-        }
+        };
 
         if (max) {
             products = products.filter(product => product.price <= parseFloat(max));
-        }
+        };
 
         // Ordenamientos
         if (sort === 'asc') {
             products.sort((a, b) => a.price - b.price);
         } else if (sort === 'desc') {
             products.sort((a, b) => b.price - a.price);
-        }
+        };
 
         // Paginación
         const pageNumber = parseInt(req.query.page) || 1;
