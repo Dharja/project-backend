@@ -54,8 +54,6 @@ router.get('/realtimeproducts', async (req, res) => {
 });
 
 router.get('/carrito', (req, res) => {
-  // res.sendFile(path.join(__dirname, '../public/carrito.html'))
-  // interactuar con el manager de carrito
     res.render('carrito', {
         numItems: 2,
         title: 'Carrito',
@@ -74,5 +72,18 @@ router.get('/profile', isAuth, (req, res) => {
         } : null,
     });
 });
+
+
+const { checkUserRole } = require('./authMiddleware');
+
+
+router.get('/admin', checkUserRole('admin'), (req, res) => {
+    res.send('Bienvenido, administrador');
+});
+
+router.get('/user', checkUserRole('user'), (req, res) => {
+    res.send('Bienvenido, usuario');
+});
+
 
 module.exports = router;

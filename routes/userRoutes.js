@@ -52,5 +52,16 @@ router.post('/login', async (req, res) => {
     }
 });
 
+const { checkUserRole } = require('./authoMiddleware');
+
+
+router.get('/admin', checkUserRole('admin'), (req, res) => {
+    res.send('Bienvenido, administrador');
+});
+
+router.get('/user', checkUserRole('user'), (req, res) => {
+    res.send('Bienvenido, usuario');
+});
+
 
 module.exports = router;

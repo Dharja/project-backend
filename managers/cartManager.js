@@ -1,5 +1,6 @@
 const fs = require('fs').promises;
 const path = require('path');
+const model = require('../models/cartModel');
 const productManager = require('../managers/productManager');
 
 class CartManager {
@@ -31,8 +32,8 @@ class CartManager {
         } catch (error) {
             console.error('Error reading carts file:', error);
             throw error;
-        }
-    }
+        };
+    };
 
     async addProductToCart(cartId, productId) {
         try {
@@ -44,7 +45,7 @@ class CartManager {
                 // Si el carrito no existe, crear uno nuevo y agregar el producto
                 cart = { id: cartId, products: [] };
                 carts.push(cart);
-            }
+            };
     
             const existingProduct = cart.products.find((p) => p.id === productId);
     
@@ -54,14 +55,14 @@ class CartManager {
             } else {
                 // Si el producto no existe en el carrito, agregarlo con cantidad 1
                 cart.products.push({ id: productId, quantity: 1 });
-            }
+            };
     
             await fs.writeFile(this.filePath, JSON.stringify(carts, null, 2), 'utf-8');
         } catch (error) {
             console.error('Error adding product to cart:', error);
             throw error;
-        }
-    }
+        };
+    };
     
 
     async addCart() {
@@ -82,8 +83,8 @@ class CartManager {
         } catch (error) {
             console.error('Error adding cart:', error);
             throw error;
-        }
-    }
-}
+        };
+    };
+};
 
 module.exports = CartManager;

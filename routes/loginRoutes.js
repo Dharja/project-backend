@@ -29,4 +29,17 @@ router.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
+
+const { checkUserRole } = require('./authMiddleware');
+
+router.get('/admin', checkUserRole('admin'), (req, res) => {
+    res.send('Bienvenido, administrador');
+});
+
+
+router.get('/user', checkUserRole('user'), (req, res) => {
+    res.send('Bienvenido, usuario');
+});
+
+
 module.exports = router;
