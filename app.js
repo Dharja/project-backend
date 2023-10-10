@@ -8,6 +8,9 @@ const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
 const path = require('path');
 const User = require('./models/userModel');
+const mockingRoutes = require('./routes/mockingRoutes');
+
+app.use('/api', mockingRoutes);
 
 const PORT = process.env.PORT || 3000;
 
