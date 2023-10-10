@@ -29,16 +29,14 @@ router.post('/product/add', async (req, res) => {
 
 const { checkUserRole } = require('./authMiddleware');
 
-// Solo el administrador puede acceder
-router.get('/admin', checkUserRole('admin'), (req, res) => {
-  // solo se ejecutará si el usuario tiene el rol 'admin'
-  res.send('Bienvenido, administrador');
+// Ruta protegida para usuarios
+app.get('/ruta-para-usuarios', checkUserRole('user'), (req, res) => {
+  res.json({ message: 'Ruta para usuarios' });
 });
 
-
-router.get('/user', checkUserRole('user'), (req, res) => {
-  // Esta ruta solo se ejecutará si el usuario tiene el rol 'user'
-  res.send('Bienvenido, usuario');
+// Ruta protegida para administradores
+app.get('/ruta-para-admin', isAdmin, (req, res) => {
+  res.json({ message: 'Ruta solo para administradores' });
 });
 
 

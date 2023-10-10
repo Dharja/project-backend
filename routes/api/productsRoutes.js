@@ -131,15 +131,6 @@ router.get('/:pid', async (req, res) => {
             res.status(500).json ({status: 500, message: 'error procesing the request'});
         }
 
-/*          const {title, description, code, price, stock, id}  
-            const newProduct = {
-                id: generateProductId(),
-                title,
-                description,
-                code,
-                price
-            }; 
-     */
 /*             await productManager.addProduct(newProduct); // método del manager para agregar un nuevo producto
     
             res.status(201).json(newProduct);

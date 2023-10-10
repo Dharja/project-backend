@@ -7,20 +7,20 @@ const userSchema = new mongoose.Schema({
     lastName: String,
     email: { type: String, unique: true },
     age: Number,
-    password: String, 
+    password: String,
     cart: { type: mongoose.Schema.Types.ObjectId, ref: 'Cart' },
     role: { type: String, default: 'user' },
 });
 
 // Antes de guardar un usuario en la base de datos, hasheamos la contraseña
-userSchema.pre('save', function(next) {
+userSchema.pre('save', function (next) {
     const user = this;
     if (!user.isModified('password')) return next();
 
-    bcrypt.genSalt(saltRounds, function(err, salt) {
+    bcrypt.genSalt(saltRounds, function (err, salt) {
         if (err) return next(err);
 
-        bcrypt.hash(user.password, salt, function(err, hash) {
+        bcrypt.hash(user.password, salt, function (err, hash) {
             if (err) return next(err);
             user.password = hash;
             next();
@@ -28,35 +28,7 @@ userSchema.pre('save', function(next) {
     });
 });
 
-
-//métodos del DAO para interactuar con la base de datos
-const UserDAO = {
-    createUser: async (userData) => {
-        try {
-            return await UserModel.create(userData);
-        } catch (error) {
-            throw new Error('Error creating user');
-        }
-        },
-        getUserByEmail: async (email) => {
-        try {
-            return await UserModel.findOne({ email });
-        } catch (error) {
-            throw new Error('Error finding user by email');
-        }
-    },
-}
-
-const createUser = async (userDetails) => {
-    try {
-        const user = new User(userDetails);
-        await user.save();
-        return user;
-    } catch (error) {
-        throw error;
-    }
-}
-
+// Definir el modelo User
 const User = mongoose.model('User', userSchema);
 
 
@@ -78,6 +50,4 @@ class UserRepository {
     }
 }
 
-module.exports = UserRepository;
-module.exports = User;
-module.exports = UserDAO;
+module.exports = { User, UserRepository };
