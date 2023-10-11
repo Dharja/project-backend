@@ -9,6 +9,25 @@ const session = require('express-session');
 const path = require('path');
 const User = require('./models/userModel');
 const mockingRoutes = require('./routes/mockingRoutes');
+const winston = require('winston');
+
+// Configuración para el entorno de desarrollo
+const developmentLogger = winston.createLogger({
+    level: 'debug', // Registra desde nivel 'debug' y superior
+    format: winston.format.simple(),
+    transports: [new winston.transports.Console()],
+});
+
+// Configuración para el entorno de producción
+const productionLogger = winston.createLogger({
+    level: 'info', // Registra desde nivel 'info' y superior
+    format: winston.format.simple(),
+    transports: [
+        new winston.transports.Console(),
+        new winston.transports.File({ filename: 'errors.log', level: 'error' }), 
+    ],
+});
+
 
 app.use('/api', mockingRoutes);
 
