@@ -130,20 +130,7 @@ router.get('/:pid', async (req, res) => {
         }catch (error){
             res.status(500).json ({status: 500, message: 'error procesing the request'});
         }
-
-/*             await productManager.addProduct(newProduct); // método del manager para agregar un nuevo producto
-    
-            res.status(201).json(newProduct);
-        catch (error) {
-            console.error('Error al agregar el producto', error);
-            res.status(500).json({ error: 'Error al agregar el producto' });
-        }*/
     });
-
-/* // Función para generar un nuevo ID para el producto
-function generateProductId() {
-    return Date.now().toString();
-} */
 
 // Ruta DELETE /api/products/:pid
 router.delete('/:pid', async (req, res) => {
@@ -174,5 +161,26 @@ router.put('/:pid', async (req, res) => {
         res.status(500).json({ error: 'Error al actualizar el producto' });
     }
 });
+
+// verificar el rol y la propiedad del producto
+router.put('/:pid', isAuthenticated, async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.pid);
+
+        if (!product) {
+            return res.status(404).json({ error: 'Producto no encontrado' });
+        }
+
+            if (req.user.role === 'admin' || (req.user.role === 'premium' && req.user.email === product.owner)) {
+            res.json({ message: 'Producto modificado con éxito' });
+        } else {
+            // Otros usuarios no pueden modificar el producto
+            res.status(403).json({ error: 'No tienes permiso para modificar este producto' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Hubo un error al modificar el producto' });
+    }
+});
+
 
 module.exports = router;

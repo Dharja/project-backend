@@ -47,15 +47,15 @@ class UserManager {
     async saveUser(id, user) {
         await this.#readFile();
         const existing = await this.getById(id);
-        if (!existing) {
-        return
-        };
-        const {
-        email,
-        firstname,
-        lastname,
-        username
-        } = user;
+            if (!existing) {
+            return
+            };
+            const {
+                email,
+                firstname,
+                lastname,
+                username
+            } = user;
 
         existing.email = email;
         existing.firstname = firstname;

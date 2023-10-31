@@ -96,11 +96,25 @@ router.post('/:cid/product/:pid', async (req, res) => {
     try {
         const cartId = req.params.cid;
         const productId = req.params.pid;
+        const isPremiumUser = checkUserRole(req.user, 'premium'); // Suponiendo que tienes una función checkUserRole
 
-        await cartManager.addProductToCart(cartId, productId); 
+        // Verificar si el usuario es "premium"
+        if (isPremiumUser) {
+            // Obtener información sobre el propietario del producto (supongamos que tienes un campo "owner" en el modelo del producto)
+            const product = await Product.findById(productId);
+            const productOwner = product.owner;
+            const userId = req.user.id;
 
-        const cart = await cartManager.getCartById(cartId); 
-        console.log('soy cart', cart);
+            // Comparar el propietario del producto con el usuario activo
+            if (productOwner.equals(userId)) {
+                return res.status(403).json({ error: 'No puedes agregar tu propio producto al carrito.' });
+            }
+        }
+
+        // Si el usuario no está tratando de agregar su propio producto, procede a agregarlo al carrito
+        await cartManager.addProductToCart(cartId, productId);
+
+        const cart = await cartManager.getCartById(cartId);
 
         if (!cart) {
             res.status(404).json({ error: 'Carrito no encontrado' });
@@ -112,7 +126,6 @@ router.post('/:cid/product/:pid', async (req, res) => {
         res.status(500).json({ error: 'Error al agregar el producto al carrito' });
     }
 });
-
 
 // Ruta POST /api/carts
 router.post('/', async (req, res) => {

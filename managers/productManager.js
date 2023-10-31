@@ -25,7 +25,6 @@ class ProductManager extends BaseManager {
 };
 
 
-
 class ProductManager {
     constructor(filePath) {
         this.filePath = filePath;

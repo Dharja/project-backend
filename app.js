@@ -11,6 +11,9 @@ const User = require('./models/userModel');
 const mockingRoutes = require('./routes/mockingRoutes');
 const winston = require('winston');
 
+router.use('/users', userRoutes);
+router.use('/password', passwordRoutes);
+
 // Configuración para el entorno de desarrollo
 const developmentLogger = winston.createLogger({
     level: 'debug', // Registra desde nivel 'debug' y superior

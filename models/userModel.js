@@ -9,7 +9,12 @@ const userSchema = new mongoose.Schema({
     age: Number,
     password: String,
     cart: { type: mongoose.Schema.Types.ObjectId, ref: 'Cart' },
-    role: { type: String, default: 'user' },
+    role: {
+        type: String,
+        enum: ['user', 'premium', 'admin'],
+        default: 'user',
+    },
+
 });
 
 // Antes de guardar un usuario en la base de datos, hasheamos la contraseña
@@ -51,3 +56,14 @@ class UserRepository {
 }
 
 module.exports = { User, UserRepository };
+
+async function addIsAdminToUsers() {
+    try {
+        const result = await User.updateMany({}, { isAdmin: false });
+        console.log(`Se han actualizado ${result.nModified} usuarios.`);
+    } catch (error) {
+        console.error('Error al actualizar usuarios:', error);
+    }
+}
+
+addIsAdminToUsers();
