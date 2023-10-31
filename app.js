@@ -14,6 +14,8 @@ const winston = require('winston');
 router.use('/users', userRoutes);
 router.use('/password', passwordRoutes);
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 // Configuración para el entorno de desarrollo
 const developmentLogger = winston.createLogger({
     level: 'debug', // Registra desde nivel 'debug' y superior
