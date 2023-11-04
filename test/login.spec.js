@@ -1,4 +1,11 @@
-const login = require('./login')
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const should = chai.should();
+
+chai.use(chaiHttp);
+
+
+const login = require('./login.test')
 
 let totalTests = 0
 let testPassed = 0
