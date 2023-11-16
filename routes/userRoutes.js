@@ -2,8 +2,30 @@ const { Router } = require('express');
 const { hashPassword, checkCredentials } = require('../managers/userManager');
 const User = require('../models/userModel');
 const { isAuthenticated, checkUserRole } = require('../middlewares/authMiddleware');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 
 const router = Router();
+
+
+
+router.post('/:uid/documents', isAuthenticated, upload.array('documents'), async (req, res) => {
+    try {
+        const userId = req.params.uid;
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+        // Procesa los documentos y actualiza el estado del usuario
+        // ...
+
+        res.json({ message: 'Documentos subidos exitosamente' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al subir documentos' });
+    }
+});
 
 // Ruta para registrar un nuevo usuario
 router.post('/signup', async (req, res) => {
@@ -79,59 +101,5 @@ router.put('/users/premium/:uid', async (req, res) => {
         res.status(500).json({ error: 'Error al cambiar el rol del usuario.' });
     }
 });
-
-// Ruta para actualizar el rol de un usuario a "premium"
-router.put('/premium/:uid', isAuthenticated, checkUserRole('admin'), async (req, res) => {
-    try {
-        const userId = req.params.uid;
-
-        // Buscar el usuario en la base de datos por su ID
-        const user = await User.findById(userId);
-    
-        if (!user) {
-            return res.status(404).json({ error: 'Usuario no encontrado' });
-        }
-    
-        if (user.role === 'premium') {
-            return res.status(400).json({ error: 'El usuario ya tiene rol premium' });
-        }
-
-    // Actualizar el rol del usuario a "premium"
-    user.role = 'premium';
-    await user.save(); // Se guardan los cambios en la base de datos
-
-        res.json({ message: 'Rol actualizado a premium con éxito' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Hubo un error al actualizar el rol del usuario' });
-    }
-});
-
-router.put('/api/users/premium/:uid', async (req, res) => {
-    try {
-        // Obtener el usuario por su ID (uid)
-        const user = await User.findById(req.params.uid);
-    
-        if (!user) {
-            return res.status(404).json({ error: 'Usuario no encontrado' });
-        }
-    
-        // Verificar el rol actual y cambiarlo
-        if (user.role === 'user') {
-            user.role = 'premium';
-        } else if (user.role === 'premium') {
-            user.role = 'user';
-        }
-    
-        // Guardar los cambios en la base de datos
-        await user.save();
-    
-        res.json({ message: 'Rol de usuario actualizado exitosamente' });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: 'Error al cambiar el rol del usuario' });
-        }
-    });
-
 
 module.exports = router;

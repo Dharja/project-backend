@@ -25,21 +25,22 @@ class ProductManager extends BaseManager {
 };
 
 
-class ProductManager {
+// FileManager
+class FileManager {
     constructor(filePath) {
         this.filePath = filePath;
-    };
+    }
 
     async getProducts() {
         try {
-        const data = await fs.readFile(this.filePath, 'utf-8');
-        const products = JSON.parse(data);
-        return products;
+            const data = await fs.readFile(this.filePath, 'utf-8');
+            const products = JSON.parse(data);
+            return products;
         } catch (error) {
-        console.error('Error reading products file:', error);
-        throw error;
-        };
-    };
+            console.error('Error reading products file:', error);
+            throw error;
+        }
+    }
 
     async getProductById(id) {
         try {
@@ -111,4 +112,7 @@ class ProductManager {
 };    
 
 
-module.exports = ProductManager;
+module.exports = {
+    ProductManager,
+    FileManager,
+};

@@ -59,3 +59,15 @@ async.waterfall([
         res.redirect('/forgot-password');
     });
 };
+
+exports.uploadDocuments = async (req, res) => {
+    // Lógica para manejar la subida de documentos
+    try {
+        const files = req.files;
+
+        res.json({ message: 'Documentos subidos exitosamente' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Hubo un error al subir los documentos' });
+    }
+};

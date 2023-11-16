@@ -10,6 +10,15 @@ const path = require('path');
 const User = require('./models/userModel');
 const mockingRoutes = require('./routes/mockingRoutes');
 const winston = require('winston');
+const { swaggerUi, specs } = require('./config/swaggerConfig')
+const multer = require('multer');
+
+const app = express();  // Crear la instancia de Express
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
+// Ruta para subir documentos con Multer
+app.post('/:uid/documents', isAuthenticated, multer.array('documents'), userController.uploadDocuments);
 
 router.use('/users', userRoutes);
 router.use('/password', passwordRoutes);
@@ -35,10 +44,6 @@ const productionLogger = winston.createLogger({
 
 
 app.use('/api', mockingRoutes);
-
-const PORT = process.env.PORT || 3000;
-
-const app = express();
 
 app.engine('handlebars', handlebars());
 app.set('views', path.join(__dirname, 'views'));
@@ -162,3 +167,15 @@ mongoose
           failureRedirect: '/login', // Redirige a la página de inicio de sesión en caso de fallo
         })
     );      
+
+    app.get('/logout', (req, res) => {
+        req.logout();
+        const userId = req.user.id;
+        User.findByIdAndUpdate(userId, { last_connection: new Date() }, (err, user) => {
+            if (err) {
+                console.error(err);
+            }
+            res.redirect('/login');
+        });
+    });
+    
