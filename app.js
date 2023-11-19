@@ -1,4 +1,8 @@
 const express = require('express');
+const router = express.Router();
+const userRoutes = require('./routes/userRoutes');
+const passwordRoutes = require('./routes/passwordRoutes');
+const swaggerSpec = require('./config/swaggerConfig');
 const http = require('http');
 const handlebars = require('express-handlebars');
 const mongoose = require('mongoose');
@@ -10,15 +14,14 @@ const path = require('path');
 const User = require('./models/userModel');
 const mockingRoutes = require('./routes/mockingRoutes');
 const winston = require('winston');
-const { swaggerUi, specs } = require('./config/swaggerConfig')
+const specs = require('./config/swaggerConfig');
+const swaggerUi = require('swagger-ui-express');
 const multer = require('multer');
 
 const app = express();  // Crear la instancia de Express
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-// Ruta para subir documentos con Multer
-app.post('/:uid/documents', isAuthenticated, multer.array('documents'), userController.uploadDocuments);
 
 router.use('/users', userRoutes);
 router.use('/password', passwordRoutes);

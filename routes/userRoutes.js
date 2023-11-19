@@ -17,8 +17,7 @@ router.post('/:uid/documents', isAuthenticated, upload.array('documents'), async
         if (!user) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
-        // Procesa los documentos y actualiza el estado del usuario
-        // ...
+
 
         res.json({ message: 'Documentos subidos exitosamente' });
     } catch (error) {
@@ -99,6 +98,73 @@ router.put('/users/premium/:uid', async (req, res) => {
     } catch (error) {
         // Manejo de errores
         res.status(500).json({ error: 'Error al cambiar el rol del usuario.' });
+    }
+});
+
+// GET /api/users
+router.get('/', async (req, res) => {
+    try {
+        const users = await User.find({}, 'nombre correo tipoDeCuenta');
+        res.json(users);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al obtener usuarios.' });
+    }
+});
+
+// DELETE /api/users
+router.delete('/', async (req, res) => {
+    try {
+        // Limpiar usuarios que no han tenido conexión en los últimos 2 días
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - 2);
+        await User.deleteMany({ lastConnection: { $lt: cutoffDate } });
+
+        // Enviar un correo a los usuarios eliminados (simulado aquí)
+        const deletedUsers = await User.find({ lastConnection: { $lt: cutoffDate } });
+        deletedUsers.forEach(user => {
+            console.log(`Se ha enviado un correo a ${user.email} indicando la eliminación de la cuenta.`);
+        });
+
+        res.json({ message: 'Usuarios eliminados correctamente.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al eliminar usuarios.' });
+    }
+});
+
+router.get('/', async (req, res) => {
+    try {
+        const users = await userService.getAllUsers();
+
+      // Filtrar la información que deseas devolver (nombre, correo, tipo de cuenta)
+        const simplifiedUsers = users.map(user => ({
+        name: user.name,
+        email: user.email,
+        accountType: user.role,
+    }));
+
+    res.json(simplifiedUsers);
+        } catch (error) {
+            console.error('Error al obtener usuarios', error);
+            res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+// Agrega esta ruta a tu router de /api/users
+router.delete('/', async (req, res) => {
+    try {
+
+        const deletedUsers = await userService.deleteInactiveUsers();
+      // Enviar correos electrónicos a los usuarios eliminados
+        deletedUsers.forEach(async (user) => {
+            await emailService.sendInactiveUserEmail(user.email);
+        });
+
+        res.json({ message: 'Usuarios inactivos eliminados correctamente' });
+    } catch (error) {
+        console.error('Error al limpiar usuarios inactivos', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
 

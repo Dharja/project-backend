@@ -2,7 +2,9 @@
   "name": "pre-entrega-1",
   "version": "1.0.0",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "mocha --exit"
   },
   "dependencies": {
     "@faker-js/faker": "^8.1.0",

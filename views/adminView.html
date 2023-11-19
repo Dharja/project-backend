@@ -1,0 +1,47 @@
+<!-- adminView.html -->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administrador</title>
+    <style>
+        /* Estilos CSS aquí */
+    </style>
+</head>
+<body>
+
+    <h1>Panel de Administrador</h1>
+
+    <div id="userList">
+        <!-- Lista de usuarios cargada -->
+        <h2>Lista de Usuarios</h2>
+        <p>Cargando...</p>
+    </div>
+
+    <script>
+        // Carga la lista de usuarios al cargar la página
+        window.onload = function () {
+            fetch('/api/users') 
+                .then(response => response.json())
+                .then(users => displayUserList(users))
+                .catch(error => console.error('Error al obtener la lista de usuarios:', error));
+        };
+
+        // Función para mostrar la lista de usuarios
+        function displayUserList(users) {
+            const userListDiv = document.getElementById('userList');
+            userListDiv.innerHTML = '<h2>Lista de Usuarios</h2>';
+
+            users.forEach(user => {
+                const userDiv = document.createElement('div');
+                userDiv.innerHTML = `<p>${user.nombre} - ${user.correo} - ${user.tipoDeCuenta}</p>`;
+                userListDiv.appendChild(userDiv);
+            });
+        }
+    </script>
+
+</body>
+</html>

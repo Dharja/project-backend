@@ -1,12 +1,14 @@
 function checkUserRole(role) {
     return (req, res, next) => {
-        if (req.user && req.user.role === role) {
-            next(); 
-        } else {
-            res.status(403).json({ error: 'Acceso no autorizado' }); 
+        if (req.user?.role !== role) {
+            res.status(403).json({ message: 'Acceso no autorizado' });
+            return;
         }
+
+    next();
     };
 }
+
 
 // Middleware para verificar si un usuario es administrador
 function isAdmin(req, res, next) {

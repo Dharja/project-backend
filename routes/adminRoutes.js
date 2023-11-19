@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const productManager = require('../managers/product.manager');
+const { checkUserRole } = require('./authMiddleware');
 
 const router = Router();
 
@@ -13,7 +14,7 @@ router.use((req, res, next) => {
   next();
 });
 
-router.get('/product/add', async (req, res) => {
+router.get('/product/add', checkUserRole('admin'), async (req, res) => {
   res.render('admin/addProduct', 
   { 
     title: 'Agregar nuevo producto',
@@ -21,13 +22,12 @@ router.get('/product/add', async (req, res) => {
   });
 });
 
-router.post('/product/add', async (req, res) => {
+router.post('/product/add', checkUserRole('admin'), async (req, res) => {
   await productManager.create(req.body);
   
   res.redirect('/admin/product/add');
 });
 
-const { checkUserRole } = require('./authMiddleware');
 
 // Ruta protegida para usuarios
 app.get('/ruta-para-usuarios', checkUserRole('user'), (req, res) => {
