@@ -6,8 +6,30 @@ const ProductManager = require('../../managers/productManager');
 const { error } = require('console');
 const { render } = require('express-handlebars');
 const { gunzipSync } = require('zlib');
+const Product = require('../../models/productModel'); 
 
 const productManager = new ProductManager(filePath);
+
+
+router.put('/:pid', isAuthenticated, async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.pid);
+
+        if (!product) {
+            return res.status(404).json({ error: 'Producto no encontrado' });
+        }
+
+        if (req.user.role === 'admin' || (req.user.role === 'premium' && req.user.email === product.owner)) {
+            const updatedProduct = await Product.findByIdAndUpdate(req.params.pid, req.body, { new: true });
+            res.json(updatedProduct);
+        } else {
+            res.status(403).json({ error: 'No tienes permiso para modificar este producto' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Hubo un error al modificar el producto' });
+    }
+});
+
 
 
 router.get('/', async (req, res) => {
@@ -73,7 +95,7 @@ router.get('/productos', (req, res) => {
     // Obtener el usuario de la sesión
     const user = req.session.user;
 
-    // Obtener el rol del usuario (puedes implementar esto según tus necesidades)
+    // Obtener el rol del usuario
     const role = user === 'adminCoder@coder.com' ? 'admin' : 'usuario';
 
     // Renderizar la vista de productos y pasar los datos del usuario y el rol
@@ -90,30 +112,13 @@ router.get('/:pid', async (req, res) => {
         if (!product) {
             res.status(404).json({ error: 'Producto no encontrado' });
         } else {
-            res.render('product', { product }); // Renderizar la vista "product" y pasar los datos del producto
+            res.render('product', { product });
         }
     } catch (error) {
         console.error('Error al obtener el producto', error);
         res.status(500).json({ error: 'Error al obtener el producto' });
     }
 }); 
-
-// Ruta GET /api/products/:pid
-router.get('/:pid', async (req, res) => {
-    try {
-        const productId = req.params.pid;
-        const product = await productManager.getProductById(productId); // método del manager para obtener un producto por su ID
-
-        if (!product) {
-            res.status(404).json({ error: 'Producto no encontrado' });
-        } else {
-            res.json(product);
-        }
-    } catch (error) {
-        console.error('Error al obtener el producto', error);
-        res.status(500).json({ error: 'Error al obtener el producto' });
-    }
-});
 
 // Ruta POST /api/products
     router.post('/', async (req, res) => {

@@ -4,8 +4,51 @@ const User = require('../models/userModel');
 const { isAuthenticated, checkUserRole } = require('../middlewares/authMiddleware');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
+import { Request, Response } from 'express';
 
 const router = Router();
+
+
+
+// GET / debe obtener todos los usuarios, sólo debe devolver los datos principales como nombre, correo, tipo de cuenta (rol) y fecha de creación
+router.get('/', async (req, res) => {
+    try {
+        const users = await User.find().select('name email role createdAt');
+        res.json(users);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al obtener usuarios' });
+    }
+});
+
+
+router.delete('/', async (req, res) => {
+    try {
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - 2);
+
+        const { deletedCount } = await User.deleteMany({ lastConnection: { $lt: cutoffDate } });
+        const deletedUsers = await User.find({ lastConnection: { $lt: cutoffDate } });
+        if (deletedCount === 0) {
+            return res.status(404).json({ message: 'ningun usuario eliminado' });
+        }
+        const emails = deletedUsers.map(async user => {
+            try {
+                await sendEmail(user.email, 'Account Deletion', 'Your account has been deleted due to inactivity');
+            } catch (emailError) {
+                console.error(`Error sending email to ${user.email}: ${emailError.message}`);
+            }
+        });
+
+        // Wait for all emails to be sent
+        await Promise.all(emails);
+
+        res.json({ message: `Se eliminarion ${deletedCount} usuarios y se enviaron correos a ${deletedUsers.length} usuarios` });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al eliminar usuarios', details: error.message });  
+    }    
+});
 
 
 
@@ -112,27 +155,6 @@ router.get('/', async (req, res) => {
     }
 });
 
-// DELETE /api/users
-router.delete('/', async (req, res) => {
-    try {
-        // Limpiar usuarios que no han tenido conexión en los últimos 2 días
-        const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - 2);
-        await User.deleteMany({ lastConnection: { $lt: cutoffDate } });
-
-        // Enviar un correo a los usuarios eliminados (simulado aquí)
-        const deletedUsers = await User.find({ lastConnection: { $lt: cutoffDate } });
-        deletedUsers.forEach(user => {
-            console.log(`Se ha enviado un correo a ${user.email} indicando la eliminación de la cuenta.`);
-        });
-
-        res.json({ message: 'Usuarios eliminados correctamente.' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error al eliminar usuarios.' });
-    }
-});
-
 router.get('/', async (req, res) => {
     try {
         const users = await userService.getAllUsers();
@@ -151,21 +173,5 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Agrega esta ruta a tu router de /api/users
-router.delete('/', async (req, res) => {
-    try {
-
-        const deletedUsers = await userService.deleteInactiveUsers();
-      // Enviar correos electrónicos a los usuarios eliminados
-        deletedUsers.forEach(async (user) => {
-            await emailService.sendInactiveUserEmail(user.email);
-        });
-
-        res.json({ message: 'Usuarios inactivos eliminados correctamente' });
-    } catch (error) {
-        console.error('Error al limpiar usuarios inactivos', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
-    }
-});
 
 module.exports = router;

@@ -6,8 +6,8 @@
     <title>Carrito de Compras</title>
 </head>
 <body>
-    <h1>Carrito de Compras</h1>
 
+    <h1>Carrito de Compras</h1>
     <ul>
         {{#each cart.products}}
         <li>
@@ -17,6 +17,22 @@
         </li>
         {{/each}}
     </ul>
+    <h2>Total: ${{cart.total}}</h2>
+
+    <form action="/cart/add" method="post">
+        <label for="quantity">Cantidad:</label>
+        <input type="number" id="quantity" name="quantity" value="1" min="1" required>
+        <input type="hidden" name="id" value="{{ product.id }}">
+        <input type="hidden" name="title" value="{{ product.title }}">
+        <input type="hidden" name="price" value="{{ product.price }}">
+        <input type="hidden" name="thumbnail" value="{{ product.thumbnail }}">
+        <input type="hidden" name="description" value="{{ product.description }}">
+        <input type="hidden" name="category" value="{{ product.category }}">
+        <input type="hidden" name="stock" value="{{ product.stock }}">
+        <input type="hidden" name="total" value="{{ product.price }}">
+        <button type="submit">Agregar al Carrito</button>
+    </form>
+
 
     <a href="/">Volver a la página principal</a>
 </body>

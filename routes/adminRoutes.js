@@ -1,18 +1,19 @@
+
 const { Router } = require('express');
 const productManager = require('../managers/product.manager');
 const { checkUserRole } = require('./authMiddleware');
 
 const router = Router();
 
-
-router.use((req, res, next) => {
-  if(req.user?.role !== 'admin') {
-    res.redirect('/');
-    return;
+// Middleware para verificar si un usuario es administrador
+const isAdmin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next(); 
+  } else {
+    res.status(403).json({ error: 'Acceso solo para administradores' });
   }
+}
 
-  next();
-});
 
 router.get('/product/add', checkUserRole('admin'), async (req, res) => {
   res.render('admin/addProduct', 
@@ -27,6 +28,16 @@ router.post('/product/add', checkUserRole('admin'), async (req, res) => {
   
   res.redirect('/admin/product/add');
 });
+
+router.post('/product/add', checkUserRole('admin'), async (req, res) => {
+  try {
+      await productManager.create(req.body);
+      res.redirect('/admin/product/add');
+  } catch (error) {
+      res.status(500).render('error', { message: 'Error al agregar el producto' });
+  }
+});
+
 
 
 // Ruta protegida para usuarios

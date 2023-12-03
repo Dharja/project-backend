@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.title }} - Detalles del Producto</title>
+</head>
+<body>
+
+    <header>
+        <h1>Detalles del Producto</h1>
+        <a href="/">Volver a la página principal</a>
+    </header>
+
+    <main>
+        <section>
+            <h2>{{ product.title }}</h2>
+            <p>Precio: ${{ product.price }}</p>
+            <p>{{ product.description }}</p>
+
+
+            <form action="/cart/add" method="post">
+                <label for="quantity">Cantidad:</label>
+                <input type="number" id="quantity" name="quantity" value="1" min="1" required>
+                <input type="hidden" name="id" value="{{ product.id }}">
+                <input type="hidden" name="title" value="{{ product.title }}">
+                <input type="hidden" name="price" value="{{ product.price }}">
+                <input type="hidden" name="thumbnail" value="{{ product.thumbnail }}">
+                <input type="hidden" name="description" value="{{ product.description }}">
+                <input type="hidden" name="category" value="{{ product.category }}">
+                <input type="hidden" name="stock" value="{{ product.stock }}">
+                <input type="hidden" name="total" value="{{ product.price }}">
+
+
+                <button type="submit">Agregar al Carrito</button>
+            </form>
+        </section>
+
+        <section>
+            <h3>Recomendados</h3>
+            <ul>
+                {{#each relatedProducts}}
+                <li>
+                    <a href="/product/{{this.id}}">{{this.title}}</a>
+                </li>
+                {{/each}}
+            </ul>
+
+            <h3>Recomendados por Categoría</h3>
+            <ul>
+                {{#each relatedProductsByCategory}}
+                <li>
+                    <a href="/product/{{this.id}}">{{this.title}}</a>
+                </li>
+                {{/each}}
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2023. Todos los derechos reservados.</p>
+    </footer>
+</body>
+</html>
