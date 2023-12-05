@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
-const User = require('../models/User');
+const User = require('../../dao/models/userModel');
 
 // Ruta para mostrar el formulario de registro
 router.get('/signup', (req, res) => {

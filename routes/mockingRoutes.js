@@ -1,5 +1,12 @@
 const express = require('express');
 const router = express.Router();
+const faker = require('@faker-js/faker');
+
+// Función para generar un código de usuario unico
+function generateUniqueCode() {
+    // Lógica para generar un código de usuario unico
+    return faker.datatype.uuid();
+}
 
 // Función para generar usuarios ficticios
 function generateUsers(count) {

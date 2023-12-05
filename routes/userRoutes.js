@@ -1,13 +1,15 @@
 const { Router } = require('express');
-const { hashPassword, checkCredentials } = require('../managers/userManager');
-const User = require('../models/userModel');
+const { hashPassword, checkCredentials } = require('../dao/managers/userManager');
+const User = require('../dao/models/userModel');
 const { isAuthenticated, checkUserRole } = require('../middlewares/authMiddleware');
+const { isAuth, checkUserRole } = require('../middlewares/authMiddleware');
+const { passwordRoutes } = require('./passwordRoutes');
+const { sendEmail } = require('../dao/managers/emailManager');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 import { Request, Response } from 'express';
 
 const router = Router();
-
 
 
 // GET / debe obtener todos los usuarios, sólo debe devolver los datos principales como nombre, correo, tipo de cuenta (rol) y fecha de creación
@@ -22,6 +24,7 @@ router.get('/', async (req, res) => {
 });
 
 
+// DELETE / debe eliminar todos los usuarios que hayan estado inactivos por mas de dos semanas
 router.delete('/', async (req, res) => {
     try {
         const cutoffDate = new Date();
@@ -34,11 +37,12 @@ router.delete('/', async (req, res) => {
         }
         const emails = deletedUsers.map(async user => {
             try {
-                await sendEmail(user.email, 'Account Deletion', 'Your account has been deleted due to inactivity');
+                await sendEmail(user.email, 'Eliminacion de cuenta', 'tu cuenta fue eliminada por inactividad');
             } catch (emailError) {
                 console.error(`Error sending email to ${user.email}: ${emailError.message}`);
             }
         });
+
 
         // Wait for all emails to be sent
         await Promise.all(emails);
@@ -52,7 +56,7 @@ router.delete('/', async (req, res) => {
 
 
 
-router.post('/:uid/documents', isAuthenticated, upload.array('documents'), async (req, res) => {
+router.post('/:uid/documents', isAuth, upload.array('documents'), async (req, res) => {
     try {
         const userId = req.params.uid;
         const user = await User.findById(userId);

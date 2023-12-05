@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const path = require ("path"); 
 const filePath = path.join(__dirname ,"..", "..", "data", "cart.json");
-const CartManager = require('../../managers/cartManager');
+const CartManager = require('../../dao/managers/cartManager');
 const { render } = require('express-handlebars');
 
 const cartManager = new CartManager(filePath);

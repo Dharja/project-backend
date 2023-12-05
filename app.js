@@ -2,21 +2,19 @@ const express = require('express');
 const router = express.Router();
 const userRoutes = require('./routes/userRoutes');
 const passwordRoutes = require('./routes/passwordRoutes');
-const swaggerSpec = require('./config/swaggerConfig');
-const http = require('http');
-const handlebars = require('express-handlebars');
+const mockingRoutes = require('./routes/mockingRoutes');
+const User = require('./dao/models/userModel');
+const winston = require('winston');
 const mongoose = require('mongoose');
-const passport = require('passport');
 const GitHubStrategy = require('passport-github').Strategy;
 const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
 const path = require('path');
-const User = require('./models/userModel');
-const mockingRoutes = require('./routes/mockingRoutes');
-const winston = require('winston');
 const specs = require('./config/swaggerConfig');
+
 const swaggerUi = require('swagger-ui-express');
-const multer = require('multer');
+
+const swaggerSpec = require('./config/swaggerConfig');
 
 const app = express();  // Crear la instancia de Express
 

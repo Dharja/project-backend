@@ -1,5 +1,5 @@
 // userController.js
-const User = require('../models/userModel');
+const User = require('../dao/models/userModel');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const async = require('async');
@@ -71,3 +71,40 @@ exports.uploadDocuments = async (req, res) => {
         res.status(500).json({ error: 'Hubo un error al subir los documentos' });
     }
 };
+
+exports.showResetPasswordForm = async (req, res) => {
+    try {
+        const token = req.params.token;
+        const user = await User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now() } });
+        if (!user) {
+            req.flash('error', 'El token ha expirado.');
+            return res.redirect('/forgot-password');
+        }
+        res.render('reset-password', { token });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al mostrar el formulario de restablecimiento de contraseña' });
+    }
+};
+
+exports.resetPassword = async (req, res) => {
+    try {
+        const token = req.params.token;
+        const user = await User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now() } });
+        if (!user) {
+            req.flash('error', 'El token ha expirado.');
+            return res.redirect('/forgot-password');
+        }
+        user.password = req.body.password;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+        req.flash('info', 'La contraseña ha sido restablecida exitosamente.');
+        res.redirect('/login');
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al restablecer la contraseña' });
+    }
+};
+
+const UserController = {};

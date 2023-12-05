@@ -56,6 +56,11 @@ class UserRepository {
         return User.findOne({ email });
     }
 
+    // Método para encontrar todos los usuarios
+    async findAll() {
+        return User.find();
+    }
+
     // Método para crear un nuevo usuario
     async create(user) {
         return User.create(user);

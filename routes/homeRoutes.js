@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const path = require('path');
-const productManager = require('../managers/product.manager');
-const isAuth = require('../middlewares/auth.middleware');
+const productManager = require('../dao/managers/productManager');
+const isAuth = require('../middlewares/authMiddleware');
 
 const router = Router();
 

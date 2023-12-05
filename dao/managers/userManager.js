@@ -1,6 +1,6 @@
 const fs = require('fs/promises');
 const path = require('path');
-const userModel = require('../models/userModel');
+const userModel = require('../dao/models/userModel');
 
 class UserManager {
 

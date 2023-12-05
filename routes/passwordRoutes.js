@@ -1,18 +1,17 @@
 // passwordRoutes.js
 const express = require('express');
 const router = express.Router();
-const UserController = require('../controllers/userController');
+const passwordController = require('../controllers/passwordController');
+const userController = require('../controllers/userController');
+const resetPassword = require('../controllers/userController');
+const showResetPasswordForm = require('../controllers/userController');
+const passport = require('passport');
 
-// Ruta para mostrar el formulario de solicitud de restablecimiento de contraseña
-router.get('/forgot-password', UserController.showForgotPasswordForm);
+router.get('/forgot', passwordController.showForgotPasswordForm);
+router.post('/forgot', passwordController.sendPasswordResetEmail);
+router.get('/reset/:token', passwordController.showResetPasswordForm);
+router.post('/reset/:token', passwordController.resetPassword);
 
-// Ruta para procesar la solicitud de restablecimiento de contraseña
-router.post('/forgot-password', UserController.sendPasswordResetEmail);
 
-// Ruta para mostrar el formulario de restablecimiento de contraseña
-router.get('/reset/:token', UserController.showResetPasswordForm);
-
-// Ruta para procesar el restablecimiento de contraseña
-router.post('/reset/:token', UserController.resetPassword);
 
 module.exports = router;

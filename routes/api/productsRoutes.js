@@ -1,17 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const path = require ("path"); 
-const filePath = path.join(__dirname ,"..", "..", "data", "products.json");
+const path = require("path");
+const filePath = path.join(__dirname, "..", "..", "data", "products.json");
 const ProductManager = require('../../managers/productManager');
-const { error } = require('console');
-const { render } = require('express-handlebars');
-const { gunzipSync } = require('zlib');
-const Product = require('../../models/productModel'); 
+const Product = require('../../models/productModel');
+const { isAuth } = require('../middlewares/authMiddleware');
 
 const productManager = new ProductManager(filePath);
 
-
-router.put('/:pid', isAuthenticated, async (req, res) => {
+// Ruta PUT /api/products/:pid
+router.put('/:pid', isAuth, async (req, res) => {
     try {
         const product = await Product.findById(req.params.pid);
 
@@ -21,21 +19,19 @@ router.put('/:pid', isAuthenticated, async (req, res) => {
 
         if (req.user.role === 'admin' || (req.user.role === 'premium' && req.user.email === product.owner)) {
             const updatedProduct = await Product.findByIdAndUpdate(req.params.pid, req.body, { new: true });
-            res.json(updatedProduct);
+            return res.json(updatedProduct);
         } else {
-            res.status(403).json({ error: 'No tienes permiso para modificar este producto' });
+            return res.status(403).json({ error: 'No tienes permiso para modificar este producto' });
         }
     } catch (error) {
-        res.status(500).json({ error: 'Hubo un error al modificar el producto' });
+        return res.status(500).json({ error: 'Hubo un error al modificar el producto' });
     }
 });
 
-
-
+// Ruta GET /api/products
 router.get('/', async (req, res) => {
     try {
         const { search, max, min, limit, sort } = req.query;
-
         let products = await productManager.getProducts();
 
         // Filtros
@@ -71,7 +67,7 @@ router.get('/', async (req, res) => {
 
         const paginatedProducts = products.slice(startIndex, endIndex);
 
-        res.json({
+        return res.json({
             status: 'success',
             payload: paginatedProducts,
             totalPages,
@@ -85,90 +81,46 @@ router.get('/', async (req, res) => {
         });
     } catch (error) {
         console.error('Error al obtener los productos', error);
-        res.status(500).json({ error: 'Error al obtener los productos' });
+        return res.status(500).json({ error: 'Error al obtener los productos' });
     }
 });
-
-
-// Ruta GET /productos
-router.get('/productos', (req, res) => {
-    // Obtener el usuario de la sesión
-    const user = req.session.user;
-
-    // Obtener el rol del usuario
-    const role = user === 'adminCoder@coder.com' ? 'admin' : 'usuario';
-
-    // Renderizar la vista de productos y pasar los datos del usuario y el rol
-    res.render('productos', { user, role });
-});
-
-
-// Ruta GET /api/products
-router.get('/:pid', async (req, res) => {
-    try {
-        const productId = req.params.pid;
-        const product = await productManager.getProductById(productId); // método del manager para obtener un producto por su ID
-
-        if (!product) {
-            res.status(404).json({ error: 'Producto no encontrado' });
-        } else {
-            res.render('product', { product });
-        }
-    } catch (error) {
-        console.error('Error al obtener el producto', error);
-        res.status(500).json({ error: 'Error al obtener el producto' });
-    }
-}); 
 
 // Ruta POST /api/products
-    router.post('/', async (req, res) => {
-        try {
-            const { body } = req;
-            const product = await productManager.addProduct(body);
+router.post('/', async (req, res) => {
+    try {
+        const { body } = req;
+        const product = await productManager.addProduct(body);
 
-            if (product) {
-                io.emit('addProduct', product); // Emitir evento de nuevo producto
-                return res.status(200).json({status: 200, message: 'product added succsesfully', product});
-            }else{
-                return res.status(400).json({status: 404, message: 'failed to add the product'});
-            }
-        }catch (error){
-            res.status(500).json ({status: 500, message: 'error procesing the request'});
+        if (product) {
+            io.emit('addProduct', product); // Emitir evento de nuevo producto
+            return res.status(200).json({ status: 200, message: 'product added successfully', product });
+        } else {
+            return res.status(400).json({ status: 404, message: 'failed to add the product' });
         }
-    });
+    } catch (error) {
+        return res.status(500).json({ status: 500, message: 'error processing the request' });
+    }
+});
 
 // Ruta DELETE /api/products/:pid
 router.delete('/:pid', async (req, res) => {
     try {
         const productId = req.params.pid;
         const product = await productManager.deleteProduct(productId); // Método del manager para eliminar el producto
-        if (!product){
-            return res.status(404).json ({status: 404, message: 'producto no encontrado'})
+        if (!product) {
+            return res.status(404).json({ status: 404, message: 'producto no encontrado' })
         } else {
             io.emit('deleteProduct', productId); // Emitir evento de producto eliminado
             return res.status(200).json({ message: 'Producto eliminado exitosamente' });
-        } 
+        }
     } catch (error) {
         console.error('Error al eliminar el producto', error);
-        res.status(500).json({ error: 'Error al eliminar el producto' });
+        return res.status(500).json({ error: 'Error al eliminar el producto' });
     }
 });
 
 // Ruta PUT /api/products/:pid
-router.put('/:pid', async (req, res) => {
-    try {
-        const productId = req.params.pid;
-        const updatedProduct = req.body;
-        await productManager.updateProduct(productId, updatedProduct); // Método del manager para actualizar el producto
-        res.status(200).json({ message: 'Producto actualizado exitosamente' });
-    } catch (error) {
-        console.error('Error al actualizar el producto', error);
-        res.status(500).json({ error: 'Error al actualizar el producto' });
-    }
-});
-
-// verificar el rol y la propiedad del producto
-router.put('/:pid', isAuthenticated, async (req, res) => {
+router.put('/:pid', isAuth, async (req, res) => {
     try {
         const product = await Product.findById(req.params.pid);
 
@@ -176,16 +128,16 @@ router.put('/:pid', isAuthenticated, async (req, res) => {
             return res.status(404).json({ error: 'Producto no encontrado' });
         }
 
-            if (req.user.role === 'admin' || (req.user.role === 'premium' && req.user.email === product.owner)) {
-            res.json({ message: 'Producto modificado con éxito' });
+        if (req.user.role === 'admin' || (req.user.role === 'premium' && req.user.email === product.owner)) {
+            const updatedProduct = await Product.findByIdAndUpdate(req.params.pid, req.body, { new: true });
+            return res.json({ message: 'Producto modificado con éxito' });
         } else {
             // Otros usuarios no pueden modificar el producto
-            res.status(403).json({ error: 'No tienes permiso para modificar este producto' });
+            return res.status(403).json({ error: 'No tienes permiso para modificar este producto' });
         }
     } catch (error) {
-        res.status(500).json({ error: 'Hubo un error al modificar el producto' });
+        return res.status(500).json({ error: 'Hubo un error al modificar el producto' });
     }
 });
-
 
 module.exports = router;

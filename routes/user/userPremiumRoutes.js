@@ -1,11 +1,11 @@
 const { Router } = require('express');
-const User = require('../models/userModel');
-const { isAuthenticated, checkUserRole } = require('../middlewares/authMiddleware');
+const User = require('../../dao/models/userModel');
+const { isAuth, checkUserRole } = require('../../middlewares/authMiddleware');
 
 const router = Router();
 
 // Ruta para actualizar el rol de un usuario a "premium"
-router.put('/:uid', isAuthenticated, checkUserRole('admin'), async (req, res) => {
+router.put('/:uid', isAuth, checkUserRole('admin'), async (req, res) => {
     try {
         const userId = req.params.uid;
 
