@@ -20,8 +20,7 @@ router.post('/signup', (req, res, next) => {
             return next(err);
         }
         if (!user) {
-
-            return res.render('signup', { error: 'Error en el registro' });
+            return res.render('signup', { error: info.message || 'Error en el registro' });
         }
 
         // Iniciar sesión automáticamente después del registro.
@@ -40,5 +39,4 @@ router.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-module.exports = router;
-
+module.exports = router; 

@@ -1,9 +1,4 @@
 const express = require('express');
-const router = express.Router();
-const userRoutes = require('./routes/userRoutes');
-const passwordRoutes = require('./routes/passwordRoutes');
-const mockingRoutes = require('./routes/mockingRoutes');
-const User = require('./dao/models/userModel');
 const winston = require('winston');
 const mongoose = require('mongoose');
 const GitHubStrategy = require('passport-github').Strategy;
@@ -11,31 +6,27 @@ const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
 const path = require('path');
 const specs = require('./config/swaggerConfig');
-
+const passportConfig = require('./config/passportConfig');
 const swaggerUi = require('swagger-ui-express');
-
 const swaggerSpec = require('./config/swaggerConfig');
+const passport = require('passport');
+const http = require('http');
+const exphbs  = require('express-handlebars');
 
-const app = express();  // Crear la instancia de Express
+const app = express(); 
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+app.engine('handlebars', exphbs());
+app.set('view engine', 'handlebars');
 
-
-router.use('/users', userRoutes);
-router.use('/password', passwordRoutes);
-
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-// Configuración para el entorno de desarrollo
+// Configuración para el entorno de desarrollo y producción
 const developmentLogger = winston.createLogger({
-    level: 'debug', // Registra desde nivel 'debug' y superior
+    level: 'debug', 
     format: winston.format.simple(),
     transports: [new winston.transports.Console()],
 });
 
-// Configuración para el entorno de producción
 const productionLogger = winston.createLogger({
-    level: 'info', // Registra desde nivel 'info' y superior
+    level: 'info', 
     format: winston.format.simple(),
     transports: [
         new winston.transports.Console(),
@@ -43,13 +34,18 @@ const productionLogger = winston.createLogger({
     ],
 });
 
+// Configuración de Swagger
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-app.use('/api', mockingRoutes);
+// Configuración de Passport
+passportConfig(app, passport);
 
+// Configuración de vistas
 app.engine('handlebars', handlebars());
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'handlebars');
 
+// Configuración de Express para usar JSON y sesiones
 app.use(express.json());
 
 app.use(
@@ -60,97 +56,8 @@ app.use(
     })
 );
 
-// Inicializar Passport
-app.use(passport.initialize());
-app.use(passport.session());
-
-// Configuración de la estrategia de autenticación local
-passport.use(new LocalStrategy(
-    {
-        usernameField: 'email',
-        passwordField: 'password',
-    },
-    function(email, password, done) {
-        User.findOne({ email: email }, function(err, user) {
-            if (err) { return done(err); }
-            if (!user) {
-                return done(null, false, { message: 'Correo electrónico incorrecto.' });
-            }
-            if (!user.validPassword(password)) {
-                return done(null, false, { message: 'Contraseña incorrecta.' });
-            }
-            return done(null, user);
-        });
-    }
-));
-
-// Configuración de la estrategia de autenticación de GitHub
-passport.use(
-    new GitHubStrategy(
-        {
-            clientID: 'tu_client_id',
-            clientSecret: 'tu_client_secret',
-            callbackURL: 'http://localhost:3000/auth/github/callback',
-        },
-        (accessToken, refreshToken, profile, done) => {
-            User.findOne({ githubId: profile.id }, (err, existingUser) => {
-                if (err) { return done(err); }
-                if (existingUser) {
-                    return done(null, existingUser);
-                } else {
-                    const newUser = new User({
-                        githubId: profile.id,
-                        displayName: profile.displayName,
-                    });
-                    newUser.save((err) => {
-                        if (err) { return done(err); }
-                        return done(null, newUser);
-                    });
-                }
-            });
-        }
-    )
-);
-
-passport.serializeUser(function(user, done) {
-    done(null, user.id);
-});
-
-passport.deserializeUser(function(id, done) {
-    User.findById(id, function(err, user) {
-        done(err, user);
-    });
-});
-
-app.get('/login', (req, res) => {
-    res.render('login');
-});
-
-app.get('/auth/github', passport.authenticate('github'));
-
-app.get(
-    '/auth/github/callback',
-    passport.authenticate('github', { failureRedirect: '/login' }),
-    (req, res) => {
-        res.redirect('/profile');
-    }
-);
-
-app.get('/profile', (req, res) => {
-    if (req.isAuthenticated()) {
-        res.render('profile', { user: req.user });
-    } else {
-        res.redirect('/login');
-    }
-});
-
-app.get('/logout', (req, res) => {
-    req.logout();
-    res.redirect('/login');
-});
-
-mongoose
-    .connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true })
+//configuracion de la base de datos
+mongoose.connect('mongodb://localhost:27017/', { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {
         console.log('Connected to MongoDB');
         http.createServer(app).listen(PORT, () => {
@@ -161,21 +68,30 @@ mongoose
         console.error('Error connecting to MongoDB:', err);
     });
 
-    app.post(
-        '/login',
-        passport.authenticate('local', {
-          successRedirect: '/dashboard', // Redirige a la página de inicio después de iniciar sesión
-          failureRedirect: '/login', // Redirige a la página de inicio de sesión en caso de fallo
-        })
-    );      
+// Configuración de rutas
+const userRoutes = require('./routes/userRoutes');
+const passwordRoutes = require('./routes/passwordRoutes');
+const mockingRoutes = require('./routes/mockingRoutes');
 
-    app.get('/logout', (req, res) => {
-        req.logout();
-        const userId = req.user.id;
-        User.findByIdAndUpdate(userId, { last_connection: new Date() }, (err, user) => {
-            if (err) {
-                console.error(err);
-            }
-            res.redirect('/login');
-        });
-    }); 
+app.use('/api', mockingRoutes);
+app.use('/users', userRoutes);
+app.use('/password', passwordRoutes);
+
+// Carga middlewares
+const adminMiddleware = require('./middlewares/adminMiddleware');
+const authMiddleware = require('./middlewares/authMiddleware');
+const loggerMiddleware = require('./middlewares/loggerMiddleware');
+const policesMiddleware = require('./middlewares/policesMiddleware');
+
+// Uso middlewares
+app.use(loggerMiddleware);
+app.use(policesMiddleware);
+app.use(authMiddleware);
+app.use(adminMiddleware);
+
+
+// Iniciar el servidor
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});

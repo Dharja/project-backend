@@ -7,7 +7,7 @@ const router = Router();
 
 // Middleware to check if a user is an admin
 const isAdmin = (req, res, next) => {
- const { user } = req;
+  const { user } = req;
 if (user && user.role === 'admin') {
     return next();
 }
